@@ -9,9 +9,9 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Hironobu Nishikokura"]
   spec.email         = ["nishiko@mindia.jp"]
 
-  spec.summary       = %q{TODO: Write a short summary, because Rubygems requires one.}
-  spec.description   = %q{TODO: Write a longer description or delete this line.}
-  spec.homepage      = "TODO: Put your gem's website or public repo URL here."
+  spec.summary       = %q{API tools for kintone}
+  spec.description   = %q{API tools for kintone}
+  spec.homepage      = "https://github.com/pandeiro245/kintone_sync"
   spec.license       = "MIT"
 
   # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
@@ -26,6 +26,9 @@ Gem::Specification.new do |spec|
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
+
+  spec.add_runtime_dependency 'kintone'
+  spec.add_runtime_dependency 'twitter'
 
   spec.add_development_dependency "bundler", "~> 1.10"
   spec.add_development_dependency "rake", "~> 10.0"
