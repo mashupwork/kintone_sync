@@ -1,5 +1,7 @@
 require "kintone_sync/version"
+require "kintone_sync/base"
+require "kintone_sync/kintone"
+require "kintone_sync/twitter"
 
 module KintoneSync
-  # Your code goes here...
 end
