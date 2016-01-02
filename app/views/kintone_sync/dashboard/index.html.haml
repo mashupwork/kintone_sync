@@ -1,0 +1,57 @@
+- flash.each do |name, msg|
+  %div= msg
+
+%hr
+%table.table.table-bordered
+  %tr
+    %th id
+    %th name
+    %th show
+    %th edit
+  - @kntn.api.apps.get.each do |app|
+    %tr
+      %td=app['appId']
+      %td=app['name']
+      %td=link_to 'show', "https://ruffnote.cybozu.com/k/#{app['appId']}", {target: '_blank'}
+      %td=link_to 'edit', "https://ruffnote.cybozu.com/k/admin/app/flow?app=#{app['appId']}", {target: '_blank'}
+
+%hr
+
+%table.table.table-bordered
+  %tr
+    %th provider
+    %th sync
+    %th model_names
+    %th kintone app id
+    %th kintone records count
+    %th command
+
+  - ENV.select{|i| i.match(/_KEY/)}.each do |key, val|
+    - provider = key.gsub(/_KEY/, '').downcase
+    %tr
+      %td
+        = provider.capitalize
+      %td
+        - if File.exist?("tmp/#{provider}_token.txt")
+          = 'synced'
+        - else
+          = link_to 'not synced', "/auth/#{provider}"
+      %td
+        - if false
+          - model_names = provider.capitalize.constantize.setting[:model_names]
+          = model_names ? model_names.join(' ,') : ''
+
+      - if File.exist?("tmp/#{provider}_kintone_app.txt")
+        - id = File.read("tmp/#{provider}_kintone_app.txt")
+        %td
+          = link_to id, "https://#{ENV['KINTONE_HOST']}/k/#{id}/", {target: '_blank'}
+        %td
+          - if File.exist?("tmp/#{provider}_kintone_count.txt")
+            = File.read("tmp/#{provider}_kintone_count.txt")
+          - else
+            colcurationg...
+      - else
+        %td{colspan: 2}
+          = link_to 'not synced', "/auth/#{provider}"
+      %td
+        = link_to "login", "/auth/#{provider}"
