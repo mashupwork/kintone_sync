@@ -1,3 +1,5 @@
+require "kintone"
+require "twitter"
 require "kintone_sync/version"
 require "kintone_sync/base"
 require "kintone_sync/kintone"
