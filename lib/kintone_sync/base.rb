@@ -1,6 +1,8 @@
 module KintoneSync
   module Base
+    include ::KintoneSync::Utils
     def initialize
+      #return unless self.class.method_defined?(:setting)
       setting = self.class.setting
       upcase = self.class.to_s.upcase
       @client = OAuth2::Client.new(
@@ -11,6 +13,7 @@ module KintoneSync
         #token_url: setting[:token_url],
         #ssl: { verify: false }
       )
+      @token = get 'token'
     end
 
     def kntn
@@ -18,12 +21,11 @@ module KintoneSync
     end
 
     def access_token
-      token = self.class.get 'token'
-      OAuth2::AccessToken.new(@client, token)
+      OAuth2::AccessToken.new(@client, @token)
     end
 
     def kntn_loop(model_name, params={})
-      @kntn = KintoneSync::Kintone.new(get("kintone_app_#{model_name.underscore.pluralize}")) unless @kntn
+      @kntn ||= create_app!
 
       #if self.class == Facebook
       #  data = self.send(model_name, params)
@@ -173,6 +175,13 @@ module KintoneSync
       end
     end
 
+    def create_app! model_name
+      key = model_name.underscore.pluralize
+      KintoneSync::Kintone.new(
+        get("kintone_app_#{key}")
+      ) 
+    end
+
     def field_names model_name
       key = model_name.underscore.pluralize
       #items = eval("#{self.class.to_s}.new.#{key}")
@@ -181,18 +190,6 @@ module KintoneSync
       return nil unless items.present?
       item = items.first
       item2field_names(item)
-    end
-
-    def exist? key
-      File.exist?("tmp/#{self.class.to_s.split('::').last.downcase}_#{key}.txt")
-    end
-
-    def get key
-      File.open("tmp/#{self.class.to_s.split('::').last.downcase}_#{key}.txt", 'r').read
-    end
-
-    def set key, val
-      File.open("tmp/#{self.class.to_s.split('::').last.downcase}_#{key}.txt", 'w') { |file| file.write(val) }
     end
   end
 end
