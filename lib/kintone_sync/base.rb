@@ -2,7 +2,12 @@ module KintoneSync
   module Base
     include ::KintoneSync::Utils
     def initialize
-      #return unless self.class.method_defined?(:setting)
+      @client = new_client
+      @token = get 'token'
+    end
+
+    def new_client
+      return nil unless self.class.method_defined?(:setting)
       setting = self.class.setting
       upcase = self.class.to_s.upcase
       @client = OAuth2::Client.new(
@@ -13,7 +18,6 @@ module KintoneSync
         #token_url: setting[:token_url],
         #ssl: { verify: false }
       )
-      @token = get 'token'
     end
 
     def kntn
@@ -25,7 +29,7 @@ module KintoneSync
     end
 
     def kntn_loop(model_name, params={})
-      @kntn ||= create_app!
+      @kntn ||= create_app!(model_name)
 
       #if self.class == Facebook
       #  data = self.send(model_name, params)
@@ -133,7 +137,7 @@ module KintoneSync
     end
 
     def sync(refresh=false)
-      self.setting[:model_names].each do |model_name|
+      model_names.each do |model_name|
         unless self.exist?("kintone_app_#{model_name.underscore.pluralize}")
           id = KintoneSync::Kintone.app_create!(
             "#{self.class.to_s.split('::').last}::#{model_name}", 

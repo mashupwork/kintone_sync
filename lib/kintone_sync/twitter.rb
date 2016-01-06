@@ -2,6 +2,14 @@ module KintoneSync
   class Twitter
     include ::KintoneSync::Base
 
+    def self.sync
+      self.new.sync
+    end
+
+    def model_names
+      ['Tweet']
+    end
+
     def tweets params = {}
       @client = ::Twitter::REST::Client.new do |config|
         config.consumer_key    = ENV['TWITTER_KEY']
