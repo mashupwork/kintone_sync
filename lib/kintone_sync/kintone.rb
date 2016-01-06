@@ -26,14 +26,15 @@ module KintoneSync
     def set_fields fields
       url = '/k/v1/preview/app/form/fields.json'
       params = {app: @app_id, properties: fields}
+
       res = @api.post(url, params)
-      raise res.inspect
+      raise res.inspect if res['errors']
     end
 
-    def deploy app
+    def deploy
       url = '/k/v1/preview/app/deploy.json'
-      res = @api.post(url, apps:[{app: app}])
-      raise res.inspect
+      res = @api.post(url, apps:[{app: @app_id}])
+      raise res.inspect if res['errors']
     end
 
     def self.remove(app_id)
