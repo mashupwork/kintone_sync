@@ -9,7 +9,7 @@ module KintoneSync
         field['options'].each_with_index do |option, i|
           options[option] = {label: option, index: i}
         end
-        type = type || field['type']
+        type = type2fulltype(type) || field['type']
         fields[to_name] = {
           type: type,
           code: to_name,
@@ -29,13 +29,11 @@ module KintoneSync
 
     def transfer_data from_name, to_name
       kintone.all.each do |record|
-        puts record.inspect
         id = record['$id']['value'].to_i
         param = {}
         val = record[from_name]['value']
         param[to_name] = val
         puts "transfer: #{id}"
-        puts param.inspect
         kintone.update! id, param if val
       end
     end
@@ -46,11 +44,28 @@ module KintoneSync
     end
 
     def change_column name, type
-      before_name = name
-      after_name = "_#{name}"
-      copy_column before_name, after_name, type
-      transfer_data before_name, after_name
-      drop_column before_name
+      tmp_name = "_#{name}"
+      copy_column name, tmp_name
+      drop_column name
+      copy_column tmp_name, name, type
+      drop_column tmp_name
+    end
+  
+    # https://cybozudev.zendesk.com/hc/ja/articles/204529724-%E3%83%95%E3%82%A9%E3%83%BC%E3%83%A0%E3%81%AE%E8%A8%AD%E5%AE%9A%E3%81%AE%E5%A4%89%E6%9B%B4#anchor_changeform_deletefields
+    def type2fulltype type = nil
+      return nil if type.nil?
+      case type
+      when 'radio'
+        'RADIO_BUTTON' 
+      when 'select'
+        'DROP_DOWN'
+      when 'input'
+        'SINGLE_LINE_TEXT'
+      when 'textarea'
+        'MULTI_LINE_TEXT'
+      else
+        type
+      end
     end
   end
 end
