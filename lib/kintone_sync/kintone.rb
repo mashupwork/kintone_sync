@@ -9,7 +9,8 @@ module KintoneSync
     end
 
     def self.app_create!(name, fields=nil)
-      @api = self.new.api
+      k = self.new
+      @api = k.api
       # https://github.com/pandeiro245/kintone/pull/1/files
       # https://github.com/pandeiro245/kintone_sync/issues/17#issuecomment-168527270
       # k.api.app.register(name, fields)
@@ -17,20 +18,22 @@ module KintoneSync
       url = '/k/v1/preview/app.json'
       res = @api.post(url, name:name)
       app = res['app'].to_i
-      self.set_fields(app, fields) if fields
-      self.deploy(app)
+      k.set_fields(app, fields) if fields
+      k.deploy(app)
       return {app: app, name: name}
     end
 
-    def self.set_fields(app, fields)
+    def set_fields(app_id, fields)
       url = '/k/v1/preview/app/form/fields.json'
-      params = {app: app, properties: fields}
-      @api.post(url, params)
+      params = {app: app_id, properties: fields}
+      res = @api.post(url, params)
+      raise res.inspect
     end
 
-    def self.deploy app
+    def deploy app
       url = '/k/v1/preview/app/deploy.json'
-      @api.post(url, apps:[{app: app}])
+      res = @api.post(url, apps:[{app: app}])
+      raise res.inspect
     end
 
     def self.remove(app_id)
@@ -48,10 +51,6 @@ module KintoneSync
     def app(app_id)
       @app_id = app_id
       self
-    end
-
-    def deploy
-      @api.app.deploy(app_id)
     end
 
     def all
