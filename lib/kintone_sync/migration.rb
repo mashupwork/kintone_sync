@@ -18,12 +18,7 @@ module KintoneSync
       end
       kintone.set_fields fields
       kintone.deploy
-      kintone.all.each do |record|
-        id = record['$id']['value'].to_i
-        params = {}
-        params[to_name] = record[from_name]['value']
-        update id, params
-      end
+      tranfer_data from_name, to_name
     end
 
     def rename_column before_name, after_name
@@ -31,8 +26,19 @@ module KintoneSync
       drop_column before_name
     end
 
-    def tranfer_data from_name, to_name
+    def transfer_data from_name, to_name
+      items = kintone.all
+      #items = [kintone.find(846)]
 
+      items.each do |record|
+        id = record['$id']['value'].to_i
+        param = {}
+        val = record[from_name]['value']
+        param[to_name] = val
+        puts "id: #{id}"
+        puts param.inspect
+        kintone.update! id, param if val
+      end
     end
 
     def drop_column name

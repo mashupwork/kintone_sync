@@ -116,6 +116,12 @@ module KintoneSync
       @api.record.update(@app_id, id.to_i, params)
     end
 
+    def update! id, record
+      res = update(id, record)
+      res['message'] ? raise(res.inspect) : res
+    end
+
+
     def calculate params
       logic = params[:logic]
       column_name = params[:column_name]
