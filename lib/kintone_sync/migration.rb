@@ -1,7 +1,7 @@
 module KintoneSync
   class Migration
     include ::KintoneSync::Base
-    def copy_column from_name, to_name
+    def copy_column from_name, to_name, type=nil
       fields={}
       kintone.api.form.get(@app_id)['properties'].each do |field|
         next unless field['code'] == from_name
@@ -9,8 +9,9 @@ module KintoneSync
         field['options'].each_with_index do |option, i|
           options[option] = {label: option, index: i}
         end
+        type = type || field['type']
         fields[to_name] = {
-          type: field['type'],
+          type: type,
           code: to_name,
           label: field['label'],
           options: options
@@ -18,7 +19,7 @@ module KintoneSync
       end
       kintone.set_fields fields
       kintone.deploy
-      tranfer_data from_name, to_name
+      transfer_data from_name, to_name
     end
 
     def rename_column before_name, after_name
@@ -27,29 +28,28 @@ module KintoneSync
     end
 
     def transfer_data from_name, to_name
-      items = kintone.all
-      #items = [kintone.find(846)]
-
-      items.each do |record|
+      kintone.all.each do |record|
+        puts record.inspect
         id = record['$id']['value'].to_i
         param = {}
         val = record[from_name]['value']
         param[to_name] = val
-        puts "id: #{id}"
+        puts "transfer: #{id}"
         puts param.inspect
         kintone.update! id, param if val
       end
     end
 
     def drop_column name
-
+      kintone.delete_field name
+      kintone.deploy
     end
 
     def change_column name, type
       before_name = name
       after_name = "_#{name}"
-      copy_column before_name, after_name
-      tranfer_data before_name, after_name
+      copy_column before_name, after_name, type
+      transfer_data before_name, after_name
       drop_column before_name
     end
   end

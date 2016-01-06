@@ -31,10 +31,20 @@ module KintoneSync
       raise res.inspect if res['errors']
     end
 
+    def delete_field field_name
+      url = '/k/v1/preview/app/form/fields.json'
+      params = {app: @app_id, fields: [field_name]}
+
+      res = @api.delete(url, params)
+      raise res.inspect if res['errors']
+      res
+    end
+
     def deploy
       url = '/k/v1/preview/app/deploy.json'
       res = @api.post(url, apps:[{app: @app_id}])
       raise res.inspect if res['errors']
+      res
     end
 
     def self.remove(app_id)
