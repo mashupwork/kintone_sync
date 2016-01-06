@@ -18,14 +18,14 @@ module KintoneSync
       url = '/k/v1/preview/app.json'
       res = @api.post(url, name:name)
       app = res['app'].to_i
-      k.set_fields(app, fields) if fields
-      k.deploy(app)
+      k.app(app).create_fields(fields) if fields
+      k.deploy
       return {app: app, name: name}
     end
 
-    def set_fields(app_id, fields)
+    def set_fields fields
       url = '/k/v1/preview/app/form/fields.json'
-      params = {app: app_id, properties: fields}
+      params = {app: @app_id, properties: fields}
       res = @api.post(url, params)
       raise res.inspect
     end
