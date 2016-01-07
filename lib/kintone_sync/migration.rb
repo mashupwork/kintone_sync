@@ -35,6 +35,11 @@ module KintoneSync
       kintone.deploy
     end
 
+    def copy_column from_name, to_name
+      fork_column from_name, to_name
+      transfer_data from_name, to_name
+    end
+
     def transfer_data from_name, to_name
       items = kintone.all
       items.each do |record|
@@ -42,7 +47,7 @@ module KintoneSync
         param = {}
         val = record[from_name]['value']
         param[to_name] = val
-        #puts "transfer_data: #{id} (#{from_name} -> #{to_name})"
+        puts "transfer_data: #{id} (#{from_name} -> #{to_name}, val is #{val.inspect})"
         kintone.update! id, param if val
       end
       puts "#{items.count} items were transferd (#{from_name} -> #{to_name})"

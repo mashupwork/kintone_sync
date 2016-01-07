@@ -51,18 +51,20 @@ module KintoneSync
     end
 
     def deploy
+      sec = 5
       url = '/k/v1/preview/app/deploy.json'
       res = @api.post(url, apps:[{app: @app_id}])
 
       if res['code'] && res['code'] == 'GAIA_APD02'
         # 設定を運用環境に適用する処理、または設定をキャンセルする処理をすでに実行中です。
-        sec = 5
         puts  "sleep #{sec}sec..."
         sleep sec
         deploy
       end
       raise res.inspect if res['errors']
-      puts 'deploy is done!'
+      puts "deploy is done! & sleep #{sec}sec..."
+      sleep sec
+
       res
     end
 
