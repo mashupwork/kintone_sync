@@ -1,9 +1,11 @@
 module KintoneSync
   module Base
     include ::KintoneSync::Utils
-    def initialize
+    def initialize app_id=nil
       @client = new_client
       @token = get 'token'
+      @app_id = app_id
+      @kintone = Kintone.new(app_id)
     end
 
     def new_client
@@ -20,16 +22,17 @@ module KintoneSync
       )
     end
 
-    def kntn
-      @kntn
+    def kintone
+      @kintone ||= Kintone.new
+      @kintone
     end
 
     def access_token
       OAuth2::AccessToken.new(@client, @token)
     end
 
-    def kntn_loop(model_name, params={})
-      @kntn ||= create_app!(model_name)
+    def kintone_loop(model_name, params={})
+      @kintone ||= create_app!(model_name)
 
       #if self.class == Facebook
       #  data = self.send(model_name, params)
@@ -46,7 +49,7 @@ module KintoneSync
           name = item['name'] || item['title'] || item['description'] || item['id'] || '名称不明'
           puts "#{i}: saving #{name}"
           app_id = get "kintone_app_#{model_name.downcase}"
-          @kntn.app(app_id).save(record)
+          @kintone.app(app_id).save(record)
         end
         params[:page] += 1 if params[:page]
         params[:offset] += items.count if params[:offset]

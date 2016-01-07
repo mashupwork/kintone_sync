@@ -7,6 +7,7 @@ require "kintone_sync/base"
 require "kintone_sync/kintone"
 require "kintone_sync/twitter"
 require "kintone_sync/facebook"
+require "kintone_sync/migration"
 
 module KintoneSync
 end

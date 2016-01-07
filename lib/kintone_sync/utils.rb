@@ -11,6 +11,7 @@ module KintoneSync
     end
 
     def get key
+      return nil unless exist? key
       File.open(key2path(key), 'r').read
     end
 
