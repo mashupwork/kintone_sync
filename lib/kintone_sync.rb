@@ -1,3 +1,6 @@
+require "haml"
+require "dotenv-rails"
+require "oauth2"
 require "kintone"
 require "twitter"
 require "kintone_sync/utils"
