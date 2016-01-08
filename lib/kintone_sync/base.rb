@@ -12,7 +12,7 @@ module KintoneSync
       return nil unless self.class.method_defined?(:setting)
       setting = self.setting
       upcase = self.class.to_s.upcase.split('::').last
-      @client = OAuth2::Client.new(
+      @client = ::OAuth2::Client.new(
         ENV["#{upcase}_KEY"],
         ENV["#{upcase}_SECRET"],
         site: setting[:site],
