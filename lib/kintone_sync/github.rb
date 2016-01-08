@@ -17,7 +17,7 @@ module KintoneSync
 
     def issues params={}
       page = params[:page] || 1
-      fetch "/issues?page=#{page}&state=all&assignee_login=all"
+      fetch "/issues?page=#{page}&state=all&filter=all"
     end
   end
 end
