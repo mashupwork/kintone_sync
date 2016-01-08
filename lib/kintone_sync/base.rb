@@ -10,8 +10,8 @@ module KintoneSync
 
     def new_client
       return nil unless self.class.method_defined?(:setting)
-      setting = self.class.setting
-      upcase = self.class.to_s.upcase
+      setting = self.setting
+      upcase = self.class.to_s.upcase.split('::').last
       @client = OAuth2::Client.new(
         ENV["#{upcase}_KEY"],
         ENV["#{upcase}_SECRET"],
@@ -23,7 +23,7 @@ module KintoneSync
     end
 
     def kintone
-      @kintone ||= Kintone.new
+      @kintone ||= Kintone.new(@app_id)
       @kintone
     end
 
@@ -51,6 +51,8 @@ module KintoneSync
           app_id = get "kintone_app_#{model_name.downcase}"
           @kintone.app(app_id).save(record)
         end
+        params[:page] ||= 1
+        params[:offset] ||= 0
         params[:page] += 1 if params[:page]
         params[:offset] += items.count if params[:offset]
         return if params[:is_all]
@@ -92,7 +94,7 @@ module KintoneSync
       if key.match(/_at$/)
         if val.to_i > 0 # timecrowd
           val = Time.at(val.to_i)
-        else
+        elsif !val.nil?
           val = val.to_datetime
         end
       elsif key.match(/_time$/) # facebook
@@ -133,7 +135,7 @@ module KintoneSync
             label: key, 
             type: item2type(key, val)
           }
-          res[key][:unique] = true if key == :id
+          res[key][:unique] = true if key.to_sym == :id
         end
       end
       res 
@@ -141,29 +143,30 @@ module KintoneSync
 
     def sync(refresh=false)
       model_names.each do |model_name|
+        key = model_name.underscore.pluralize
+        kintone_key = "kintone_app_#{key}"
+        id = self.get kintone_key
+        self.remove(id) if refresh
         unless self.exist?("kintone_app_#{model_name.underscore.pluralize}")
           id = KintoneSync::Kintone.app_create!(
             "#{self.class.to_s.split('::').last}::#{model_name}", 
             field_names(model_name)
           )[:app]
-          self.set "kintone_app_#{model_name.underscore.pluralize}", id
+          self.set kintone_key, id
         end
-        self.remove(model_name) if refresh
         self.sync_a_model(model_name)
       end
     end
 
     def sync_a_model model_name
       if self.class.instance_methods.include?(:sync_a_model)
-        kntn_loop(model_name.underscore.pluralize)
+        kintone_loop(model_name.underscore.pluralize)
       else
         super
       end
     end
 
-    def remove
-      id = ENV["#{self.to_s.upcase}_KINTONE_APP"].to_i
-      id = 20
+    def remove(id)
       KintoneSync::Kintone.new(id).remove
     end
 

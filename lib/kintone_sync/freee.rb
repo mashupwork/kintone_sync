@@ -12,9 +12,9 @@ module KintoneSync
     def sync model_name
       case model_name
       when 'WalletTxn'
-        kntn_loop('wallet_txns', {offset: 0})
+        kintone_loop('wallet_txns', {offset: 0})
       when 'Walletable'
-        kntn_loop('walletables', {is_all: true})
+        kintone_loop('walletables', {is_all: true})
       end
     end
 
