@@ -7,8 +7,8 @@ module KintoneSync
       }
     end
 
-    def self.sync
-      self.new.sync
+    def self.sync(refresh=false)
+      self.new.sync(refresh)
     end
 
     def model_names
@@ -17,7 +17,7 @@ module KintoneSync
 
     def issues params={}
       page = params[:page] || 1
-      fetch "/issues?page=#{page}&state=all"
+      fetch "/issues?page=#{page}&state=all&assignee_login=all"
     end
   end
 end

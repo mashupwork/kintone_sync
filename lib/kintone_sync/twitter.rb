@@ -2,8 +2,8 @@ module KintoneSync
   class Twitter
     include ::KintoneSync::Base
 
-    def self.sync
-      self.new.sync
+    def self.sync(refresh=false)
+      self.new.sync(refresh)
     end
 
     def model_names
