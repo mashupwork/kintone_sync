@@ -12,8 +12,8 @@
     %tr
       %td=app['appId']
       %td=app['name']
-      %td=link_to 'show', "https://ruffnote.cybozu.com/k/#{app['appId']}", {target: '_blank'}
-      %td=link_to 'edit', "https://ruffnote.cybozu.com/k/admin/app/flow?app=#{app['appId']}", {target: '_blank'}
+      %td=link_to 'show', "https://#{ENV['KINTONE_HOST']}/k/#{app['appId']}", {target: '_blank'}
+      %td=link_to 'edit', "https://#{ENV['KINTONE_HOST']}/k/admin/app/flow?app=#{app['appId']}", {target: '_blank'}
 
 %hr
 
