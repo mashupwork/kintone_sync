@@ -72,19 +72,12 @@ module KintoneSync
     def item2record item
       record = {}
       item.to_hash.each do |key, val|
-        begin
-          if val.class == Hash
-            val.each do |k, v|
-              record["#{key}_#{k}"] = typed_val(k, v)
-            end
-          else
-            record[key] = typed_val(key, val)
+        if val.class == Hash
+          val.each do |k, v|
+            record["#{key}_#{k}"] = typed_val(k, v)
           end
-        rescue=>e
-          puts "key is below"
-          puts key.inspect
-          puts val.inspect
-          raise e.inspect
+        else
+          record[key] = typed_val(key, val)
         end
       end
       record
@@ -92,7 +85,7 @@ module KintoneSync
 
     def typed_val key, val
       if key.match(/_at$/)
-        if val.to_i > 0 # timecrowd
+        if val.class == Fixnum # timecrowd
           val = Time.at(val.to_i)
         elsif !val.nil?
           val = val.to_datetime
