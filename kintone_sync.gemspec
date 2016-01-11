@@ -27,7 +27,10 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
+  spec.add_runtime_dependency 'sanitize'
+
   spec.add_runtime_dependency 'kintone'
+  spec.add_runtime_dependency 'gmail'
   spec.add_runtime_dependency 'twitter'
   spec.add_runtime_dependency 'haml'
   spec.add_runtime_dependency 'dotenv-rails'
