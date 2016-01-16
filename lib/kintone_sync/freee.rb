@@ -40,6 +40,25 @@ module KintoneSync
     def company_id
       url = '/api/1/users/me?companies=true'
       fetch(url)['user']['companies'].first['id'].to_i
-    end    
+    end
+
+    def calculate params
+      logic = params[:logic]
+      column_name = params[:column_name]
+      puts "logic is #{logic}"
+      all.each do |record|
+        case logic
+        when 'absolute'
+          from_column_name='amount'
+          to_column_name='amount_absolute'
+          params[to_column_name] = record[from_column_name]['value'].to_i.abs
+        when 'blank_is_forever'
+          next if record[column_name]['value'].present?
+          params[column_name] = '3000-01-01'
+        end
+        id = record['$id']['value']
+        update(id, params)
+      end
+    end
   end
 end

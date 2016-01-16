@@ -152,30 +152,10 @@ module KintoneSync
       res['message'] ? raise(res.inspect) : res
     end
 
-
-    def calculate params
-      logic = params[:logic]
-      column_name = params[:column_name]
-      puts "logic is #{logic}"
-      all.each do |record|
-        case logic
-        when 'absolute'
-          from_column_name='amount'
-          to_column_name='amount_absolute'
-          params[to_column_name] = record[from_column_name]['value'].to_i.abs
-        when 'blank_is_forever'
-          next if record[column_name]['value'].present?
-          params[column_name] = '3000-01-01'
-        end
-        id = record['$id']['value']
-        update(id, params)
-      end
-    end
-
     def remove app_id=nil
       app_id ||= @app_id
-      # 500以上にしたらエラーになる
-      # 削除が一度に100件しかできない）
+      # データ取得：上限500件
+      # データ削除：上限100件
       query = 'limit 100' 
       records = @api.records.get(app_id, query, [])['records']
       is_retry = true if records.present? && records.count >= 100
@@ -184,7 +164,7 @@ module KintoneSync
       puts 'start to delete'
       @api.records.delete(app_id, ids)
       puts 'end to delete'
-      remove if is_retry
+      remove app_id if is_retry
     end
   end
 end

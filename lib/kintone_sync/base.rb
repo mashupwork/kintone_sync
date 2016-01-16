@@ -49,7 +49,7 @@ module KintoneSync
           name = item['name'] || item['title'] || item['description'] || item['id'] || '名称不明'
           puts "#{i}: saving #{name}"
           app_id = get "kintone_app_#{model_name.downcase}"
-          @kintone.app(app_id).save(record)
+          @kintone.app(app_id).save!(record)
         end
         params[:page] ||= 1
         params[:offset] ||= 0
