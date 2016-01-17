@@ -49,7 +49,29 @@ module KintoneSync
           name = item['name'] || item['title'] || item['description'] || item['id'] || '名称不明'
           puts "#{i}: saving #{name}"
           app_id = get "kintone_app_#{model_name.downcase}"
-          @kintone.app(app_id).save!(record)
+
+          # どのカラムでAPIエラーが起きたのかを検証する： https://github.com/pandeiro245/kintone_sync/issues/30
+          #keys = record.keys
+          #0.upto(keys.length).each do |i2|
+          #  puts "0..#{i2}"
+          #  record2 = {}
+          #  0.upto(i2).each do |i3|
+          #    key = keys[i3]
+          #    next if key.to_sym == :id
+          #    next if key.to_sym == :number
+          #    record2[key] = record[key]
+          #    #@kintone.app(app_id).save!(record)
+          #    puts "specified key is #{key}"
+          #    puts "specified val is #{record[key]}"
+          #  end
+          #  @kintone.app(app_id).save!(record2)
+          #end
+
+          record2 = {}
+          record.each do |key, val|
+            record2[key] = record[key].to_s
+          end
+          @kintone.app(app_id).save!(record2)
         end
         params[:page] ||= 1
         params[:offset] ||= 0
