@@ -16,9 +16,9 @@ module KintoneSync
     end
 
     def issues params={}
-      page = params[:page] || 1
-      #fetch "/repos/pandeiro245/kintone_portal/issues"
-      fetch "/issues?page=#{page}&state=all&filter=all"
+      #page = params[:page] || 1
+      fetch "/repos/pandeiro245/kintone_portal/issues"
+      #fetch "/issues?page=#{page}&state=all&filter=all"
     end
   end
 end
