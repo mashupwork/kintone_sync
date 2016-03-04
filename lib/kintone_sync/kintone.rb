@@ -16,7 +16,6 @@ module KintoneSync
           host, user, pass,
           basic_user, basic_pass
         )
-
       else
         @api = ::Kintone::Api.new(
           host, user, pass
@@ -30,10 +29,25 @@ module KintoneSync
       return res
     end
 
-    def app_info
+    def fields
       url = '/k/v1/app/form/fields.json'
       res = @api.get(url, {app: self.app_id})
       return res
+    end
+
+    def info
+      url = '/k/v1/preview/app/settings.json'
+      res = @api.get(url, {app: self.app_id})
+      return res
+    end
+
+    def backup
+      backup_id = ENV['KINTONE_BACKUP']
+      self.class.new(backup_id).create({
+        appName: info['name'],
+        appId: app_id.to_i,
+        structure: fields.to_json
+      })
     end
 
     def self.app_create!(name, fields=nil)
