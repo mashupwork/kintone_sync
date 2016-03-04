@@ -1,29 +1,54 @@
 module KintoneSync
   class Kintone
+    attr_accessor :app_id
     def initialize(app_id=nil)
       host = ENV['KINTONE_HOST']
       user = ENV['KINTONE_USER']
       pass = ENV['KINTONE_PASS']
-      @app_id = app_id
-      @api = ::Kintone::Api.new(host, user, pass)
+
+      # https://github.com/jue58/kintone/compare/master...pandeiro245:basic-auth
+      basic_user = ENV['KINTONE_BASIC_USER']
+      basic_pass = ENV['KINTONE_BASIC_PASS']
+
+      @app_id = app_id.to_i
+      if basic_user
+        @api = ::Kintone::Api.new(
+          host, user, pass,
+          basic_user, basic_pass
+        )
+
+      else
+        @api = ::Kintone::Api.new(
+          host, user, pass
+        )
+      end
+    end
+
+    def apps
+      url = '/k/v1/apps.json'
+      res = @api.get(url, {app: self.app_id})
+      return res
+    end
+
+    def app_info
+      url = '/k/v1/app/form/fields.json'
+      res = @api.get(url, {app: self.app_id})
+      return res
     end
 
     def self.app_create!(name, fields=nil)
       k = self.new
       @api = k.api
-      # https://github.com/pandeiro245/kintone/pull/1/files
-      # https://github.com/pandeiro245/kintone_sync/issues/17#issuecomment-168527270
-      # k.api.app.register(name, fields)
-
       url = '/k/v1/preview/app.json'
       res = @api.post(url, name:name)
       app = res['app'].to_i
       k.app(app).create_fields(fields) if fields
-      k.deploy
+      #k.deploy
       return {app: app, name: name}
     end
 
     def create_fields fields
+      puts 'create_fields in KintoneSync::Kintone'
       url = '/k/v1/preview/app/form/fields.json'
       params = {app: @app_id, properties: fields}
 
@@ -128,7 +153,8 @@ module KintoneSync
       begin
         res = @api.record.register(@app_id, params)
       rescue
-        sleep 5
+        #sleep 5
+        sleep 0.1
         save pre_params
       end
       res
