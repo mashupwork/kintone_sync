@@ -66,7 +66,6 @@ module KintoneSync
       drop_column tmp_name
     end
   
-    # https://cybozudev.zendesk.com/hc/ja/articles/204529724-%E3%83%95%E3%82%A9%E3%83%BC%E3%83%A0%E3%81%AE%E8%A8%AD%E5%AE%9A%E3%81%AE%E5%A4%89%E6%9B%B4#anchor_changeform_deletefields
     def type2fulltype type = nil
       return nil if type.nil?
       case type
@@ -78,9 +77,21 @@ module KintoneSync
         'SINGLE_LINE_TEXT'
       when 'textarea'
         'MULTI_LINE_TEXT'
-      else
-        type
+      else # multi_select
+        type.upcase
       end
+    end
+
+    def create_fields code, type, options=nil
+      type = type2fulltype(type)
+      fields = {}
+      fields[code] = {
+        type: type,
+        code: code,
+        label: code,
+      }
+      fields[:options] = options if options.present?
+      kintone.create_fields fields
     end
   end
 end
