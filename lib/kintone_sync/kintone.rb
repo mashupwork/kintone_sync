@@ -31,8 +31,7 @@ module KintoneSync
 
     def fields
       url = '/k/v1/app/form/fields.json'
-      res = @api.get(url, {app: self.app_id})
-      return res
+      @api.get(url, {app: self.app_id})
     end
 
     def info
@@ -41,12 +40,21 @@ module KintoneSync
       return res
     end
 
+    def backup_all
+      apps['apps'].each do |app|
+        app_id = app['appId']
+        k= KintoneSync::Kintone.new(app_id)
+        k.backup
+      end
+    end
+
     def backup
       backup_id = ENV['KINTONE_BACKUP']
       self.class.new(backup_id).create({
         appName: info['name'],
         appId: app_id.to_i,
-        structure: fields.to_json
+        structure: fields.to_json,
+        data: all.to_json # TODO 複数文字列カラムの容量制限確認
       })
     end
 
