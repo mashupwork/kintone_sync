@@ -25,7 +25,8 @@ module KintoneSync
 
     def apps
       url = '/k/v1/apps.json'
-      res = @api.get(url, {app: self.app_id})
+      #res = @api.get(url, {app: self.app_id})
+      res = @api.get(url)
       return res
     end
 
@@ -43,8 +44,12 @@ module KintoneSync
     def backup_all
       apps['apps'].each do |app|
         app_id = app['appId']
+        backup_id = ENV['KINTONE_BACKUP']
+        next if app_id.to_i == backup_id.to_i
         k= KintoneSync::Kintone.new(app_id)
+        puts "start to backup #{app_id}"
         k.backup
+        puts "end to backup #{app_id}"
       end
     end
 
