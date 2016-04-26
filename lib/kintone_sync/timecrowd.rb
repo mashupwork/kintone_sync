@@ -12,13 +12,13 @@ module KintoneSync
     end
 
     def model_names
-      ['Issue']
+      ['Task']
     end
 
-    def issues params={}
-      page = params[:page] || 1
-      #fetch "/repos/pandeiro245/kintone_portal/issues"
-      fetch "/issues?page=#{page}&state=all&filter=all"
+    def tasks params={}
+      team_id = params[:team_id]
+      page    = params[:page] || 1
+      fetch "/api/v1/teams/#{team_id}/tasks?page=#{page}"
     end
   end
 end
