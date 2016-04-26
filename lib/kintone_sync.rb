@@ -12,6 +12,7 @@ require "kintone_sync/github"
 require "kintone_sync/twitter"
 require "kintone_sync/facebook"
 require "kintone_sync/migration"
+require "kintone_sync/timecrowd"
 
 module KintoneSync
 end
