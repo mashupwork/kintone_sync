@@ -11,6 +11,7 @@ require "kintone_sync/kintone"
 require "kintone_sync/github"
 require "kintone_sync/twitter"
 require "kintone_sync/facebook"
+require "kintone_sync/eight"
 require "kintone_sync/migration"
 
 module KintoneSync
