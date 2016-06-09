@@ -16,18 +16,18 @@ module KintoneSync
           host, user, pass,
           basic_user, basic_pass
         )
-
       else
         @api = ::Kintone::Api.new(
           host, user, pass
         )
       end
-      @info = app_info
+      @info = info
     end
 
     def apps
       url = '/k/v1/apps.json'
-      res = @api.get(url, {app: self.app_id})
+      #res = @api.get(url, {app: self.app_id})
+      res = @api.get(url)
       return res
     end
 
@@ -35,10 +35,39 @@ module KintoneSync
       @info['properties']
     end
 
-    def app_info
+    def fields
       url = '/k/v1/app/form/fields.json'
-      res = @api.get(url, {app: self.app_id})
-      return res
+      @api.get(url, {app: self.app_id})
+    end
+
+    def info
+      unless @info
+        url = '/k/v1/preview/app/settings.json'
+        @info = @api.get(url, {app: self.app_id})
+      end
+      @info
+    end
+
+    def backup_all
+      apps['apps'].each do |app|
+        app_id = app['appId']
+        backup_id = ENV['KINTONE_BACKUP']
+        next if app_id.to_i == backup_id.to_i
+        k= KintoneSync::Kintone.new(app_id)
+        puts "start to backup #{app_id}"
+        k.backup
+        puts "end to backup #{app_id}"
+      end
+    end
+
+    def backup
+      backup_id = ENV['KINTONE_BACKUP']
+      self.class.new(backup_id).create({
+        appName: info['name'],
+        appId: app_id.to_i,
+        structure: fields.to_json,
+        data: all.to_json # TODO 複数文字列カラムの容量制限確認
+      })
     end
 
     def self.app_create!(name, fields=nil)
