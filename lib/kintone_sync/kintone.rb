@@ -22,12 +22,17 @@ module KintoneSync
           host, user, pass
         )
       end
+      @info = app_info
     end
 
     def apps
       url = '/k/v1/apps.json'
       res = @api.get(url, {app: self.app_id})
       return res
+    end
+
+    def properties
+      @info['properties']
     end
 
     def app_info
@@ -127,7 +132,12 @@ module KintoneSync
     def where cond
       query = ''
       cond.each do |k, v|
-        query += "#{k} = \"#{v.to_s}\""
+        query += ' and ' unless query == ''
+        if properties[k.to_s]['type'] == 'DROP_DOWN'
+          query += "#{k} in (\"#{v}\")"
+        else
+          query += "#{k} = \"#{v.to_s}\""
+        end
       end
       @api.records.get(@app_id, query, [])
     end
