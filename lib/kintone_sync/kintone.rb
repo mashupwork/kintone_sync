@@ -2,26 +2,27 @@ module KintoneSync
   class Kintone
     attr_accessor :app_id
     def initialize(app_id=nil)
-      host = ENV['KINTONE_HOST']
-      user = ENV['KINTONE_USER']
-      pass = ENV['KINTONE_PASS']
+      @host = ENV['KINTONE_HOST']
+      @user = ENV['KINTONE_USER']
+      @pass = ENV['KINTONE_PASS']
 
       # https://github.com/jue58/kintone/compare/master...pandeiro245:basic-auth
-      basic_user = ENV['KINTONE_BASIC_USER']
-      basic_pass = ENV['KINTONE_BASIC_PASS']
+      @basic_user = ENV['KINTONE_BASIC_USER']
+      @basic_pass = ENV['KINTONE_BASIC_PASS']
 
       @app_id = app_id.to_i
-      if basic_user
+      if @basic_user
         @api = ::Kintone::Api.new(
-          host, user, pass,
-          basic_user, basic_pass
+          @host, @user, @pass,
+          @basic_user, @basic_pass
         )
       else
         @api = ::Kintone::Api.new(
-          host, user, pass
+          @host, @user, @pass
         )
       end
       @info = info
+      @fields = fields
     end
 
     def apps
@@ -32,12 +33,15 @@ module KintoneSync
     end
 
     def properties
-      @info['properties']
+      @fields['properties']
     end
 
     def fields
-      url = '/k/v1/app/form/fields.json'
-      @api.get(url, {app: self.app_id})
+      unless @fields
+        url = '/k/v1/app/form/fields.json'
+        @fields = @api.get(url, {app: self.app_id})
+      end
+      @fields
     end
 
     def info
@@ -158,6 +162,11 @@ module KintoneSync
       res
     end
 
+    def limit(limit=0) # FIXME
+      query = "offset 0"
+      @api.records.get(@app_id, query, [])['records']
+    end
+
     def where cond
       query = ''
       cond.each do |k, v|
@@ -199,6 +208,11 @@ module KintoneSync
       res
     end
 
+    def create! pre_params
+      res = create(pre_params)
+      res['message'] ? raise(res.inspect) : res
+    end
+
     def save! record, unique_key=nil
       res = save(record, unique_key)
       res['message'] ? raise(res.inspect) : res
@@ -209,11 +223,36 @@ module KintoneSync
       record.each do |k, v|
         params[k] = {value: v}
       end
-      @api.record.update(@app_id, id.to_i, params)
+      @api.record.update(@app_id, id.to_i, params) 
+    end
+
+    def update_all records
+      array = []
+      records.each do |id, r|
+        params = {}
+        r.each do |k, v|
+          params[k] = {value: v}
+        end
+        array.push({
+          id: id,
+          record: params
+        })
+      end
+      puts "update #{array.count} records..."
+      while array.present?
+        a100 = array.shift(100)
+        @api.records.update(@app_id, a100) 
+      end
+      {}
     end
 
     def update! id, record
       res = update(id, record)
+      res['message'] ? raise(res.inspect) : res
+    end
+
+    def update_all! records
+      res = update_all(records)
       res['message'] ? raise(res.inspect) : res
     end
 

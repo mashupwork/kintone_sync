@@ -82,15 +82,32 @@ module KintoneSync
       end
     end
 
-    def create_fields code, type, options=nil
+    def set_fields code, type, options, label
       type = type2fulltype(type)
       fields = {}
+      label = label || code
       fields[code] = {
         type: type,
         code: code,
-        label: code,
+        label: label,
       }
       fields[:options] = options if options.present?
+      return fields[code]
+    end
+
+    def create_fields code, type, options=nil, label=nil
+      fields = {}
+      fileds[code] = set_fields(code, type, options, label)
+      kintone.create_fields fields
+    end
+
+    def create_subtable code, sub_fields
+      fields = {}
+      fields[code] = {
+        code: code,
+        type: "SUBTABLE",
+        fields: sub_fields
+      }
       kintone.create_fields fields
     end
   end
