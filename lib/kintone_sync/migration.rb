@@ -1,7 +1,22 @@
 module KintoneSync
   class Migration
     include ::KintoneSync::Base
-    def rename_column from_name, to_name
+
+    def rename_label code, to_name
+      fields={}
+      kintone.api.form.get(@app_id)['properties'].each do |field|
+        type = field['type']
+        fields[code] = {
+          label: to_name,
+          type: type,
+          code: code,
+        }
+      end
+      kintone.update_fields fields
+      kintone.deploy
+    end
+
+    def rename_code from_name, to_name
       fields={}
       kintone.api.form.get(@app_id)['properties'].each do |field|
         next unless field['code'] == from_name
