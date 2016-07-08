@@ -12,6 +12,7 @@ module KintoneSync
       return nil unless self.class.method_defined?(:setting)
       setting = self.setting
       upcase = self.class.to_s.upcase.split('::').last
+
       @client = ::OAuth2::Client.new(
         ENV["#{upcase}_KEY"],
         ENV["#{upcase}_SECRET"],
@@ -34,13 +35,6 @@ module KintoneSync
     def kintone_loop(model_name, params={})
       @kintone ||= create_app!(model_name)
 
-      #if self.class == Facebook
-      #  data = self.send(model_name, params)
-      #  items = data['data']
-      #  next_page = data['paging']['next']
-      #else
-      #  items = self.send(model_name, params)
-      #end
       items = self.send(model_name, params)
 
       while items.present?
@@ -49,27 +43,10 @@ module KintoneSync
           name = item['name'] || item['title'] || item['description'] || item['id'] || '名称不明'
           puts "#{i}: saving #{name}"
           app_id = get "kintone_app_#{model_name.downcase}"
-
-          # どのカラムでAPIエラーが起きたのかを検証する： https://github.com/pandeiro245/kintone_sync/issues/30
-          #keys = record.keys
-          #0.upto(keys.length).each do |i2|
-          #  puts "0..#{i2}"
-          #  record2 = {}
-          #  0.upto(i2).each do |i3|
-          #    key = keys[i3]
-          #    next if key.to_sym == :id
-          #    next if key.to_sym == :number
-          #    record2[key] = record[key]
-          #    #@kintone.app(app_id).save!(record)
-          #    puts "specified key is #{key}"
-          #    puts "specified val is #{record[key]}"
-          #  end
-          #  @kintone.app(app_id).save!(record2)
-          #end
-
           record2 = {}
           record.each do |key, val|
-            record2[key] = record[key].to_s
+            record2[key] = record[key]
+            record2[key] = record2[key].to_s unless record2[key].class == Time
           end
           @kintone.app(app_id).save!(record2)
         end
@@ -78,15 +55,6 @@ module KintoneSync
         params[:page] += 1 if params[:page]
         params[:offset] += items.count if params[:offset]
         return if params[:is_all]
-        #if next_page
-        #  data = fetch(next_page)
-        #  items = data['data']
-        #  #next_page = data['paging'].present? ? data['paging']['next'] : nil
-        #elsif self.class == Twitter
-        #  # do nothing
-        #else
-        #  items = self.send(model_name, params)
-        #end
         items = self.send(model_name, params)
       end
     end
@@ -125,7 +93,8 @@ module KintoneSync
         'DATETIME'
       elsif key.match(/_on$/) || key == 'date'
         'DATE'
-      elsif !key.match(/id$/) && (val.class == Fixnum || key == 'duration') # idを数値にするとtweet_idなどが桁数オーバーするので文字列にする
+      # idを数値にするとtweet_idなどが桁数オーバーするので文字列にする
+      elsif !key.match(/id$/) && (val.class == Fixnum || key == 'duration') 
         'NUMBER'
       else
         'SINGLE_LINE_TEXT'
@@ -209,9 +178,7 @@ module KintoneSync
 
     def field_names model_name
       key = model_name.underscore.pluralize
-      #items = eval("#{self.class.to_s}.new.#{key}")
       items = self.send(key)
-      #items = items['data'] if self.class == Facebook
       return nil unless items.present?
       item = items.first
       item2field_names(item)

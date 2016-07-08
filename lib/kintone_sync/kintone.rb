@@ -81,7 +81,7 @@ module KintoneSync
       res = @api.post(url, name:name)
       app = res['app'].to_i
       k.app(app).create_fields(fields) if fields
-      #k.deploy
+      k.deploy
       return {app: app, name: name}
     end
 
