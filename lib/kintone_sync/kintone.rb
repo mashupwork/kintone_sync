@@ -226,6 +226,26 @@ module KintoneSync
       @api.record.update(@app_id, id.to_i, params) 
     end
 
+    def create_all records
+      array = []
+      records.each do |r|
+        params = {}
+        r.each do |k, v|
+          params[k] = {value: v}
+        end
+        array.push(
+          params
+        )
+      end
+      puts "create #{array.count} records..."
+      while array.present?
+        a100 = array.shift(100)
+        @api.records.register(@app_id, a100) 
+      end
+      {}
+    end
+
+
     def update_all records
       array = []
       records.each do |id, r|
