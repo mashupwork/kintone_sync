@@ -233,9 +233,9 @@ module KintoneSync
         r.each do |k, v|
           params[k] = {value: v}
         end
-        array.push({
-          record: params
-        })
+        array.push(
+          params
+        )
       end
       puts "create #{array.count} records..."
       while array.present?
