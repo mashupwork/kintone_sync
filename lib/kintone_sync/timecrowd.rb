@@ -8,8 +8,7 @@ module KintoneSync
     end
 
     def tasks params={}
-      page = params[:page] || 1
-      fetch "/api/v1/teams/5/tasks?page=#{page}"
+      fetch_all "/api/v1/teams/5/tasks", pager_key: 'page'
     end
 
     def time_entries params={}

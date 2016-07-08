@@ -38,18 +38,20 @@ module KintoneSync
       items = self.send(model_name, params)
 
       while items.present?
+        records = []
         items.each_with_index do |item, i|
           record = item2record(item)
           name = item['name'] || item['title'] || item['description'] || item['id'] || '名称不明'
           puts "#{i}: saving #{name}"
-          app_id = get "kintone_app_#{model_name.downcase}"
           record2 = {}
           record.each do |key, val|
             record2[key] = record[key]
             record2[key] = record2[key].to_s unless record2[key].class == Time
           end
-          @kintone.app(app_id).save!(record2)
+          records.push(record2)
         end
+        app_id = get "kintone_app_#{model_name.downcase}"
+        @kintone.app(app_id).create_all(records)
         params[:page] ||= 1
         params[:offset] ||= 0
         params[:page] += 1 if params[:page]
@@ -167,6 +169,18 @@ module KintoneSync
         sleep 5
         fetch url
       end
+    end
+
+    def fetch_all url, pager_key: nil
+      page = 1
+      res = []
+      items = fetch("#{url}?#{pager_key}=#{page}")
+      while items.present?
+        page += 1
+        items = fetch("#{url}?#{pager_key}=#{page}")
+        res += items
+      end
+      items
     end
 
     def create_app! model_name
