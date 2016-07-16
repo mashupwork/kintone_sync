@@ -1,10 +1,10 @@
 module KintoneSync
   class Kintone
     attr_accessor :app_id
-    def initialize(app_id=nil)
-      @host = ENV['KINTONE_HOST']
-      @user = ENV['KINTONE_USER']
-      @pass = ENV['KINTONE_PASS']
+    def initialize(app_id=nil, params = {})
+      @host = params[:host] || ENV['KINTONE_HOST']
+      @user = params[:user] || ENV['KINTONE_USER']
+      @pass = params[:pass] || ENV['KINTONE_PASS']
 
       # https://github.com/jue58/kintone/compare/master...pandeiro245:basic-auth
       @basic_user = ENV['KINTONE_BASIC_USER']
@@ -74,14 +74,14 @@ module KintoneSync
       })
     end
 
-    def self.app_create!(name, fields=nil)
-      k = self.new
-      @api = k.api
+    def self.app_create!(name, fields=nil, kintone=nil)
+      kintone ||= self.new
+      @api = kintone.api
       url = '/k/v1/preview/app.json'
       res = @api.post(url, name:name)
       app = res['app'].to_i
-      k.app(app).create_fields(fields) if fields
-      #k.deploy
+      kintone.app(app).create_fields(fields) if fields
+      kintone.deploy
       return {app: app, name: name}
     end
 
@@ -92,7 +92,7 @@ module KintoneSync
 
       res = @api.post(url, params)
       puts res.inspect
-      raise if res['errors']
+      raise res['errors'] if res['errors']
     end
 
     def update_fields fields
