@@ -245,7 +245,6 @@ module KintoneSync
       {}
     end
 
-
     def update_all records
       array = []
       records.each do |id, r|
@@ -264,6 +263,10 @@ module KintoneSync
         @api.records.update(@app_id, a100) 
       end
       {}
+    end
+    def create_all!
+      res = create_all(records)
+      res['message'] ? raise(res.inspect) : res
     end
 
     def update! id, record
