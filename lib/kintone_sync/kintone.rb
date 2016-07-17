@@ -240,7 +240,7 @@ module KintoneSync
       puts "create #{array.count} records..."
       while array.present?
         a100 = array.shift(100)
-        @api.records.register(@app_id, a100) 
+        res = @api.records.register(@app_id, a100) 
       end
       {}
     end
@@ -264,7 +264,7 @@ module KintoneSync
       end
       {}
     end
-    def create_all!
+    def create_all! records
       res = create_all(records)
       res['message'] ? raise(res.inspect) : res
     end
