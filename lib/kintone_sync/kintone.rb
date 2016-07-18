@@ -264,7 +264,8 @@ module KintoneSync
       end
       {}
     end
-    def create_all!
+
+    def create_all! records
       res = create_all(records)
       res['message'] ? raise(res.inspect) : res
     end
