@@ -33,11 +33,12 @@ module KintoneSync
     end
 
     def properties
-      @fields['properties']
+      fields['properties']
     end
 
     def fields
-      unless @fields
+      #unless @fields
+      if true
         url = '/k/v1/app/form/fields.json'
         @fields = @api.get(url, {app: self.app_id})
       end
@@ -92,7 +93,7 @@ module KintoneSync
 
       res = @api.post(url, params)
       puts res.inspect
-      raise res['errors'] if res['errors']
+      raise res['errors'].inspect if res['errors']
     end
 
     def update_fields fields
@@ -242,7 +243,7 @@ module KintoneSync
         a100 = array.shift(100)
         res = @api.records.register(@app_id, a100) 
       end
-      {}
+      res
     end
 
     def update_all records
