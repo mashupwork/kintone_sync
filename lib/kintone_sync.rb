@@ -1,5 +1,4 @@
 require "haml"
-require "dotenv-rails"
 require "oauth2"
 require "kintone"
 require "twitter"
