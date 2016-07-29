@@ -1,6 +1,5 @@
 require "oauth2"
 require "kintone"
-require "twitter"
 require "kintone_sync/utils"
 require "kintone_sync/engine"
 require "kintone_sync/version"
