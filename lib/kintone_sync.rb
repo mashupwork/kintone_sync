@@ -1,4 +1,3 @@
-require "haml"
 require "oauth2"
 require "kintone"
 require "twitter"
