@@ -7,8 +7,8 @@ module KintoneSync
       @pass = params[:pass] || ENV['KINTONE_PASS']
 
       # https://github.com/jue58/kintone/compare/master...pandeiro245:basic-auth
-      @basic_user = ENV['KINTONE_BASIC_USER']
-      @basic_pass = ENV['KINTONE_BASIC_PASS']
+      @basic_user = params[:basic_user] || ENV['KINTONE_BASIC_USER']
+      @basic_pass = params[:basic_pass] || ENV['KINTONE_BASIC_PASS']
 
       @app_id = app_id.to_i
       if @basic_user
