@@ -10,6 +10,8 @@ module KintoneSync
       @basic_user = params[:basic_user] || ENV['KINTONE_BASIC_USER']
       @basic_pass = params[:basic_pass] || ENV['KINTONE_BASIC_PASS']
 
+      @fields_cache = {}
+
       @app_id = app_id.to_i
       if @basic_user
         @api = ::Kintone::Api.new(
@@ -21,8 +23,8 @@ module KintoneSync
           @host, @user, @pass
         )
       end
-      @info = info
-      @fields = fields
+      info
+      fields
     end
 
     def apps
@@ -37,12 +39,11 @@ module KintoneSync
     end
 
     def fields
-      #unless @fields
-      if true
+      unless @fields_cache[app_id]
         url = '/k/v1/app/form/fields.json'
-        @fields = @api.get(url, {app: self.app_id})
+        @fields_cache[app_id] = @api.get(url, {app: self.app_id})
       end
-      @fields
+      @fields_cache[app_id]
     end
 
     def info
