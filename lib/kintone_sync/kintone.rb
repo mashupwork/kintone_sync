@@ -151,22 +151,7 @@ module KintoneSync
     end
 
     def all
-      res = []
-      offset = 0
-      query = "offset #{offset}"
-      items = @api.records.get(@app_id, query, [])
-      while(items['records'].present?)
-        res += items['records']
-        offset += items['records'].count
-        query = "offset #{offset}"
-        items = @api.records.get(@app_id, query, [])
-      end
-      res
-    end
-
-    def limit(limit=0) # FIXME
-      query = "offset 0"
-      @api.records.get(@app_id, query, [])['records']
+      fetch_all_records
     end
 
     def container_type?(type)
@@ -190,14 +175,14 @@ module KintoneSync
                    "#{k} #{not_op}= \"#{v}\""
                  end
       end
-      @api.records.get(@app_id, query, [])
+      fetch_all_records(query)
     end
 
     def save pre_params, unique_key=nil
       if unique_key
         cond = {}
         cond[unique_key] = pre_params[unique_key]
-        records = where(cond)['records']
+        records = where(cond)
         if records.present?
           id = records.first['$id']['value'].to_i
           return update(id, pre_params)
@@ -306,6 +291,23 @@ module KintoneSync
       @api.records.delete(app_id, ids)
       puts 'end to delete'
       remove app_id if is_retry
+    end
+
+    private
+
+    def fetch_all_records(base_query = '')
+      res = []
+      offset = 0
+      limit = 500
+      loop do
+        query = "#{base_query} limit #{limit} offset #{offset}"
+        records = @api.records.get(@app_id, query, [])['records']
+        break unless records
+        res += records
+        break if records.count < limit
+        offset += limit
+      end
+      res
     end
   end
 end
