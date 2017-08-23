@@ -173,19 +173,21 @@ module KintoneSync
       %w(DROP_DOWN CHECK_BOX RADIO_BUTTON).include?(type)
     end
 
-    def where cond
+    def where(cond, deny: false)
       query = ''
       cond.each do |k, v|
         query += ' and ' unless query == ''
         type = properties[k.to_s]['type']
+        is_container = container_type?(type)
+        not_op = is_container ? 'not' : ?! if deny
         query += if container_type?(type)
                    if v.is_a?(Array)
-                     "#{k} in (\"#{v.join('","')}\")"
+                     "#{k} #{not_op} in (\"#{v.join('","')}\")"
                    else
-                     "#{k} in (\"#{v}\")"
+                     "#{k} #{not_op} in (\"#{v}\")"
                    end
                  else
-                   "#{k} = \"#{v}\""
+                   "#{k} #{not_op}= \"#{v}\""
                  end
       end
       @api.records.get(@app_id, query, [])
