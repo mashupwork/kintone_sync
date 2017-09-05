@@ -191,6 +191,10 @@ module KintoneSync
       @api.records.get(@app_id, query, [])['records'].first
     end
 
+    def find_each(cond, options = {})
+      where(cond, options).each
+    end
+
     def save pre_params, unique_key=nil
       if unique_key
         cond = {}
