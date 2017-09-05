@@ -163,13 +163,13 @@ module KintoneSync
     end
 
     def where_query(cond, options = {})
-      query = ''
+      query = ''.dup
       cond.each do |k, v|
-        query += ' and ' unless query == ''
+        query << ' and ' unless query == ''
         type = properties[k.to_s]['type']
         is_container = container_type?(type)
         not_op = is_container ? 'not' : ?! if options[:not]
-        query += if container_type?(type)
+        query << if container_type?(type)
                    if v.is_a?(Array)
                      "#{k} #{not_op} in (\"#{v.join('","')}\")"
                    else
@@ -178,6 +178,9 @@ module KintoneSync
                  else
                    "#{k} #{not_op}= \"#{v}\""
                  end
+      end
+      if options[:order_by]
+        query << " order by #{options[:order_by]}"
       end
       query
     end
