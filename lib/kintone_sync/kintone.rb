@@ -159,13 +159,17 @@ module KintoneSync
     end
 
     def where(cond, options = {})
-      query = ''
+      fetch_all_records(where_query(cond, options))
+    end
+
+    def where_query(cond, options = {})
+      query = ''.dup
       cond.each do |k, v|
-        query += ' and ' unless query == ''
+        query << ' and ' unless query == ''
         type = properties[k.to_s]['type']
         is_container = container_type?(type)
         not_op = is_container ? 'not' : ?! if options[:not]
-        query += if container_type?(type)
+        query << if container_type?(type)
                    if v.is_a?(Array)
                      "#{k} #{not_op} in (\"#{v.join('","')}\")"
                    else
@@ -175,7 +179,20 @@ module KintoneSync
                    "#{k} #{not_op}= \"#{v}\""
                  end
       end
-      fetch_all_records(query)
+      if options[:order_by]
+        query << " order by #{options[:order_by]}"
+      end
+      query
+    end
+
+    def find_by(cond, options = {})
+      base_query = where_query(cond, options)
+      query = "#{base_query} limit 1 offset 0"
+      @api.records.get(@app_id, query, [])['records'].first
+    end
+
+    def find_each(cond, options = {})
+      where(cond, options).each
     end
 
     def save pre_params, unique_key=nil
@@ -216,12 +233,12 @@ module KintoneSync
       res['message'] ? raise(res.inspect) : res
     end
 
-    def update id, record
+    def update id, record, revision: nil
       params = {}
       record.each do |k, v|
         params[k] = {value: v}
       end
-      @api.record.update(@app_id, id.to_i, params) 
+      @api.record.update(@app_id, id.to_i, params, revision: revision)
     end
 
     def create_all records
@@ -268,8 +285,8 @@ module KintoneSync
       res['message'] ? raise(res.inspect) : res
     end
 
-    def update! id, record
-      res = update(id, record)
+    def update! id, record, revision: nil
+      res = update(id, record, revision: revision)
       res['message'] ? raise(res.inspect) : res
     end
 
@@ -278,7 +295,7 @@ module KintoneSync
       res['message'] ? raise(res.inspect) : res
     end
 
-    def remove app_id=nil
+    def remove app_id=nil, revisions: nil
       app_id ||= @app_id
       # データ取得：上限500件
       # データ削除：上限100件
@@ -288,7 +305,7 @@ module KintoneSync
       return 'no records' if records.blank?
       ids = records.map{|r| r['$id']['value'].to_i}
       puts 'start to delete'
-      @api.records.delete(app_id, ids)
+      @api.records.delete(app_id, ids, revisions: revisions)
       puts 'end to delete'
       remove app_id if is_retry
     end
