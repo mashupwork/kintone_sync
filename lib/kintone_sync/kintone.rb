@@ -159,6 +159,10 @@ module KintoneSync
     end
 
     def where(cond, options = {})
+      fetch_all_records(where_query(cond, options))
+    end
+
+    def where_query(cond, options = {})
       query = ''
       cond.each do |k, v|
         query += ' and ' unless query == ''
@@ -175,11 +179,13 @@ module KintoneSync
                    "#{k} #{not_op}= \"#{v}\""
                  end
       end
-      fetch_all_records(query)
+      query
     end
 
     def find_by(cond, options = {})
-      where(cond, options).first
+      base_query = where_query(cond, options)
+      query = "#{base_query} limit 1 offset 0"
+      @api.records.get(@app_id, query, [])['records'].first
     end
 
     def save pre_params, unique_key=nil
