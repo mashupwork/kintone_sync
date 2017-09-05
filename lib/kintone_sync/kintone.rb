@@ -178,6 +178,10 @@ module KintoneSync
       fetch_all_records(query)
     end
 
+    def find_by(cond, options = {})
+      where(cond, options).first
+    end
+
     def save pre_params, unique_key=nil
       if unique_key
         cond = {}
