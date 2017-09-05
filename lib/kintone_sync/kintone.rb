@@ -216,12 +216,12 @@ module KintoneSync
       res['message'] ? raise(res.inspect) : res
     end
 
-    def update id, record
+    def update id, record, revision: nil
       params = {}
       record.each do |k, v|
         params[k] = {value: v}
       end
-      @api.record.update(@app_id, id.to_i, params) 
+      @api.record.update(@app_id, id.to_i, params, revision: revision)
     end
 
     def create_all records
@@ -268,8 +268,8 @@ module KintoneSync
       res['message'] ? raise(res.inspect) : res
     end
 
-    def update! id, record
-      res = update(id, record)
+    def update! id, record, revision: nil
+      res = update(id, record, revision: revision)
       res['message'] ? raise(res.inspect) : res
     end
 
@@ -278,7 +278,7 @@ module KintoneSync
       res['message'] ? raise(res.inspect) : res
     end
 
-    def remove app_id=nil
+    def remove app_id=nil, revisions: nil
       app_id ||= @app_id
       # データ取得：上限500件
       # データ削除：上限100件
@@ -288,7 +288,7 @@ module KintoneSync
       return 'no records' if records.blank?
       ids = records.map{|r| r['$id']['value'].to_i}
       puts 'start to delete'
-      @api.records.delete(app_id, ids)
+      @api.records.delete(app_id, ids, revisions: revisions)
       puts 'end to delete'
       remove app_id if is_retry
     end
