@@ -213,14 +213,7 @@ module KintoneSync
       pre_params.each do |k, v|
         params[k] = {value: v}
       end
-      begin
-        res = @api.record.register(@app_id, params)
-      rescue
-        #sleep 5
-        sleep 0.1
-        save pre_params
-      end
-      res
+      @api.record.register(@app_id, params)
     end
 
     def create! pre_params
