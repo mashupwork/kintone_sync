@@ -253,6 +253,7 @@ module KintoneSync
       res
     end
 
+    # records = [[record_id, params], [record_id, params], ....]
     def update_all records
       array = []
       records.each do |id, r|
