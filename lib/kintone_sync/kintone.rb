@@ -46,6 +46,11 @@ module KintoneSync
       @fields_cache[app_id]
     end
 
+    def fetch_views
+      url = '/k/v1/preview/app/views.json'
+      @api.get(url, {app: self.app_id})
+    end
+
     def info
       unless @info
         url = '/k/v1/preview/app/settings.json'
