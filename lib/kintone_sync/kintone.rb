@@ -163,6 +163,10 @@ module KintoneSync
       %w(DROP_DOWN CHECK_BOX RADIO_BUTTON).include?(type)
     end
 
+    def where_by_string(query)
+      fetch_all_records(query)
+    end
+
     def where(cond, options = {})
       fetch_all_records(where_query(cond, options))
     end
