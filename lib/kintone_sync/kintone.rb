@@ -164,7 +164,7 @@ module KintoneSync
     end
 
     def where(cond_or_query, options = {})
-      query = cond_or_query.class == String ? cond_or_query : where_query(cond, options)
+      query = cond_or_query.is_a?(String) ? cond_or_query : where_query(cond, options)
       fetch_all_records(query)
     end
 
