@@ -156,7 +156,11 @@ module KintoneSync
     end
 
     def all
-      fetch_all_records
+      # for more than 10,000 records.
+      # https://developer.cybozu.io/hc/ja/articles/360030757312#use_id
+      query = "order by $id asc"
+
+      fetch_all_records(query)
     end
 
     def container_type?(type)
@@ -187,6 +191,10 @@ module KintoneSync
       end
       if options[:order_by]
         query << " order by #{options[:order_by]}"
+      else
+        # for more than 10,000 records.
+        # https://developer.cybozu.io/hc/ja/articles/360030757312#use_id
+        query << " order by $id asc"
       end
       query
     end
