@@ -163,8 +163,7 @@ module KintoneSync
       previous_id = 0
       limit = 500
       loop do
-        base_query = "$id > #{previous_id} order by $id asc"
-        query = "#{base_query} limit #{limit}"
+        query = "$id > #{previous_id} order by $id asc limit #{limit}"
 
         _records = @api.records.get(@app_id, query, [])
         break if _records.blank?
