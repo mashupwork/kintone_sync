@@ -158,9 +158,26 @@ module KintoneSync
     def all
       # for more than 10,000 records.
       # https://developer.cybozu.io/hc/ja/articles/360030757312#use_id
-      query = "order by $id asc"
 
-      fetch_all_records(query)
+      res = []
+      previous_id = 0
+      limit = 500
+      loop do
+        base_query = "$id > #{previous_id} order by $id asc"
+        query = "#{base_query} limit #{limit}"
+
+        _records = @api.records.get(@app_id, query, [])
+        break if _records.blank?
+
+        records = _records['records']
+
+        break if records.blank?
+        res += records
+
+        break if previous_id == records.last['$id']['value']
+        previous_id = records.last['$id']['value']
+      end
+      res
     end
 
     def container_type?(type)
@@ -191,10 +208,6 @@ module KintoneSync
       end
       if options[:order_by]
         query << " order by #{options[:order_by]}"
-      else
-        # for more than 10,000 records.
-        # https://developer.cybozu.io/hc/ja/articles/360030757312#use_id
-        query << " order by $id asc"
       end
       query
     end
@@ -262,7 +275,7 @@ module KintoneSync
       puts "create #{array.count} records..."
       while array.present?
         a100 = array.shift(100)
-        res = @api.records.register(@app_id, a100) 
+        res = @api.records.register(@app_id, a100)
       end
       res
     end
@@ -283,7 +296,7 @@ module KintoneSync
       puts "update #{array.count} records..."
       while array.present?
         a100 = array.shift(100)
-        @api.records.update(@app_id, a100) 
+        @api.records.update(@app_id, a100)
       end
       {}
     end
@@ -307,7 +320,7 @@ module KintoneSync
       app_id ||= @app_id
       # データ取得：上限500件
       # データ削除：上限100件
-      query = 'limit 100' 
+      query = 'limit 100'
       records = @api.records.get(app_id, query, [])['records']
       is_retry = true if records.present? && records.count >= 100
       return 'no records' if records.blank?
