@@ -156,27 +156,7 @@ module KintoneSync
     end
 
     def all
-      # for more than 10,000 records.
-      # https://developer.cybozu.io/hc/ja/articles/360030757312#use_id
-
-      res = []
-      previous_id = 0
-      limit = 500
-      loop do
-        query = "$id > #{previous_id} order by $id asc limit #{limit}"
-
-        _records = @api.records.get(@app_id, query, [])
-        break if _records.blank?
-
-        records = _records['records']
-
-        break if records.blank?
-        res += records
-
-        break if previous_id == records.last['$id']['value']
-        previous_id = records.last['$id']['value']
-      end
-      res
+      fetch_records('order by $id asc limit 500', fetch_all: true)
     end
 
     def container_type?(type)
@@ -185,7 +165,7 @@ module KintoneSync
 
     def where(cond_or_query, options = {})
       query = cond_or_query.is_a?(String) ? cond_or_query : where_query(cond_or_query, options)
-      fetch_all_records(query)
+      fetch_records(query)
     end
 
     def where_query(cond, options = {})
@@ -332,18 +312,39 @@ module KintoneSync
 
     private
 
-    def fetch_all_records(base_query = '')
+    alias_method :fetch_all_records, :fetch_records
+
+    def fetch_records(base_query = '', fetch_all: false)
+      # for more than 10,000 records.
+      # https://developer.cybozu.io/hc/ja/articles/360030757312#use_id
+
       res = []
       offset = 0
       limit = 500
+      previous_id = 0
       loop do
-        query = "#{base_query} limit #{limit} offset #{offset}"
-        records = @api.records.get(@app_id, query, [])['records']
+        query = if fetch_all
+                  "$id > #{previous_id} #{base_query}"
+                else
+                  "#{base_query} limit #{limit} offset #{offset}"
+                end
+        records = @api.records.get(@app_id, query, []).dig('records')
         break unless records
+
         res += records
-        break if records.count < limit
-        offset += limit
+
+        if fetch_all
+          last_record_id = records.last.dig('$id', 'value')
+          break if previous_id == last_record_id
+
+          previous_id = last_record_id
+        else
+          break if records.count < limit
+
+          offset += limit
+        end
       end
+
       res
     end
   end
