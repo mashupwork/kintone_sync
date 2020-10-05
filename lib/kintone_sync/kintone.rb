@@ -156,7 +156,7 @@ module KintoneSync
     end
 
     def all
-      fetch_records('order by $id asc limit 500', fetch_all: true)
+      fetch_records('', fetch_all: true)
     end
 
     def container_type?(type)
@@ -324,7 +324,7 @@ module KintoneSync
       previous_id = 0
       loop do
         query = if fetch_all
-                  "$id > #{previous_id} #{base_query}"
+                  "$id > #{previous_id} order by $id asc limit 500"
                 else
                   "#{base_query} limit #{limit} offset #{offset}"
                 end
