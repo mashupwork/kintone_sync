@@ -156,7 +156,7 @@ module KintoneSync
     end
 
     def all
-      fetch_all_records
+      fetch_records('', fetch_all: true)
     end
 
     def container_type?(type)
@@ -165,7 +165,7 @@ module KintoneSync
 
     def where(cond_or_query, options = {})
       query = cond_or_query.is_a?(String) ? cond_or_query : where_query(cond_or_query, options)
-      fetch_all_records(query)
+      fetch_records(query)
     end
 
     def where_query(cond, options = {})
@@ -254,7 +254,7 @@ module KintoneSync
       puts "create #{array.count} records..."
       while array.present?
         a100 = array.shift(100)
-        res = @api.records.register(@app_id, a100) 
+        res = @api.records.register(@app_id, a100)
       end
       res
     end
@@ -275,7 +275,7 @@ module KintoneSync
       puts "update #{array.count} records..."
       while array.present?
         a100 = array.shift(100)
-        @api.records.update(@app_id, a100) 
+        @api.records.update(@app_id, a100)
       end
       {}
     end
@@ -299,7 +299,7 @@ module KintoneSync
       app_id ||= @app_id
       # データ取得：上限500件
       # データ削除：上限100件
-      query = 'limit 100' 
+      query = 'limit 100'
       records = @api.records.get(app_id, query, [])['records']
       is_retry = true if records.present? && records.count >= 100
       return 'no records' if records.blank?
@@ -312,18 +312,39 @@ module KintoneSync
 
     private
 
-    def fetch_all_records(base_query = '')
+    alias_method :fetch_all_records, :fetch_records
+
+    def fetch_records(base_query = '', fetch_all: false)
+      # for more than 10,000 records.
+      # https://developer.cybozu.io/hc/ja/articles/360030757312#use_id
+
       res = []
       offset = 0
       limit = 500
+      previous_id = 0
       loop do
-        query = "#{base_query} limit #{limit} offset #{offset}"
-        records = @api.records.get(@app_id, query, [])['records']
+        query = if fetch_all
+                  "$id > #{previous_id} order by $id asc limit 500"
+                else
+                  "#{base_query} limit #{limit} offset #{offset}"
+                end
+        records = @api.records.get(@app_id, query, []).dig('records')
         break unless records
+
         res += records
-        break if records.count < limit
-        offset += limit
+
+        if fetch_all
+          last_record_id = records.last.dig('$id', 'value')
+          break if previous_id == last_record_id
+
+          previous_id = last_record_id
+        else
+          break if records.count < limit
+
+          offset += limit
+        end
       end
+
       res
     end
   end
