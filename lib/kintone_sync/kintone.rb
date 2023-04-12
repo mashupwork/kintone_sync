@@ -312,8 +312,6 @@ module KintoneSync
 
     private
 
-    alias_method :fetch_all_records, :fetch_records
-
     def fetch_records(base_query = '', fetch_all: false)
       # for more than 10,000 records.
       # https://developer.cybozu.io/hc/ja/articles/360030757312#use_id
@@ -347,5 +345,7 @@ module KintoneSync
 
       res
     end
+
+    alias_method :fetch_all_records, :fetch_records
   end
 end
