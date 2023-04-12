@@ -327,7 +327,7 @@ module KintoneSync
                   "#{base_query} limit #{limit} offset #{offset}"
                 end
         records = @api.records.get(@app_id, query, []).dig('records')
-        break unless records
+        break if records.blank?
 
         res += records
 
